@@ -423,18 +423,18 @@ export function createServer(
         clearInterval(pingInterval);
       }
 
-      if (isErrorEvent(errorOrClose)) {
-        ctxRef.current.socket.close(
-          1011,
-          isProd ? 'Internal Error' : errorOrClose.message,
-        );
-      }
-
-      Object.entries(ctxRef.current.subscriptions).forEach(
-        ([, subscription]) => {
+      try {
+        if (isErrorEvent(errorOrClose)) {
+          ctxRef.current.socket.close(
+            1011,
+            isProd ? 'Internal Error' : errorOrClose.message,
+          );
+        }
+      } finally {
+        Object.values(ctxRef.current.subscriptions).forEach((subscription) => {
           subscription.return?.();
-        },
-      );
+        });
+      }
     }
 
     socket.onerror = errorOrCloseHandler;
